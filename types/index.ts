@@ -49,7 +49,7 @@ export interface HouseholdMember {
   id: string;
   name: {
     first: string;
-    middle: string;
+    middle?: string;
     last: string;
   };
   relationship: string;

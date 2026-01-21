@@ -457,7 +457,7 @@ export default function Step2ApplicantInfo({ onNext, onBack }: Step2ApplicantInf
             <Label className="font-semibold">
               Have you ever been convicted of a felony?
             </Label>
-            <Accordion type="single" collapsible>
+            <Accordion type="single">
               <AccordionItem value="felony-info">
                 <AccordionTrigger value="felony-info">
                   <span className="text-sm text-muted-foreground">
