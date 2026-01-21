@@ -1,356 +1,280 @@
 import { z } from "zod";
 
-// Step 1: Program Selection
-export const programSelectionSchema = z.object({
-  programs: z.array(z.enum([
-    "SNAP",
-    "TANF",
-    "TANF_DIVERSIONARY",
-    "TANF_EMERGENCY",
-    "AUXILIARY_GRANTS",
-    "GENERAL_RELIEF",
-    "REFUGEE_CASH_ASSISTANCE",
-  ])).min(1, "Please select at least one program"),
-  tanfNoSnap: z.boolean().default(false),
-});
-
-// Step 2: Applicant Information
-export const applicantInfoSchema = z.object({
-  name: z.object({
-    first: z.string().min(1, "First name is required"),
-    middle: z.string().optional(),
-    last: z.string().min(1, "Last name is required"),
+// Step 1: About You
+export const aboutYouSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  hasMiddleName: z.boolean(),
+  middleName: z.string().optional(),
+  dateOfBirth: z.string().min(1, "Date of birth is required"),
+  sex: z.enum(["Male", "Female"]),
+  ssn: z.string().regex(/^\d{3}-?\d{2}-?\d{4}$/, "SSN must be in format XXX-XX-XXXX"),
+  homeAddress: z.object({
+    street: z.string().min(1, "Street address is required"),
+    city: z.string().min(1, "City is required"),
+    state: z.string().min(1, "State is required"),
+    zip: z.string().regex(/^\d{5}(-\d{4})?$/, "Invalid ZIP code"),
   }),
-  streetAddress: z.string().min(1, "Street address is required"),
-  mailingAddressSame: z.boolean().default(true),
+  mailingAddressSame: z.boolean(),
   mailingAddress: z.object({
     street: z.string(),
     city: z.string(),
+    state: z.string(),
     zip: z.string(),
   }).optional(),
-  city: z.string().min(1, "City is required"),
-  county: z.string().min(1, "County is required"),
-  zip: z.string().regex(/^\d{5}(-\d{4})?$/, "Invalid ZIP code"),
+  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
-  primaryPhone: z.string().min(10, "Phone number must be at least 10 digits"),
-  alternatePhone: z.string().optional(),
-  primaryLanguage: z.string().min(1, "Primary language is required"),
-  otherLanguage: z.string().optional(),
-  correspondencePreference: z.enum(["text", "email", "mail"]),
-  priorBenefits: z.boolean(),
-  priorBenefitsDetails: z.string().optional(),
-  fraudConvictions: z.boolean(),
-  disqualifications: z.boolean(),
-  paroleProbation: z.boolean(),
-  felonyConvictions: z.boolean(),
-  felonyTypes: z.array(z.string()).optional(),
+  contactPreference: z.enum(["Phone", "Mail", "Email", "Text"]),
+  proofOfIdentity: z.any().optional(),
 }).refine(
   (data) => {
-    if (data.correspondencePreference === "text" && !data.primaryPhone) {
+    if (!data.hasMiddleName && data.middleName) {
       return false;
     }
-    if (data.correspondencePreference === "email" && !data.email) {
+    if (data.hasMiddleName && !data.middleName) {
       return false;
     }
     return true;
   },
   {
-    message: "Correspondence preference requires valid contact information",
+    message: "Middle name is required if you indicated you have one",
+    path: ["middleName"],
   }
 ).refine(
   (data) => {
-    if (data.priorBenefits && !data.priorBenefitsDetails) {
+    if (!data.mailingAddressSame && !data.mailingAddress) {
       return false;
     }
     return true;
   },
   {
-    message: "Please provide details about prior benefits",
-    path: ["priorBenefitsDetails"],
+    message: "Mailing address is required if different from home address",
+    path: ["mailingAddress"],
   }
 );
 
-// Step 3: Household Composition
+// Step 2: Household
 export const householdMemberSchema = z.object({
   id: z.string(),
-  name: z.object({
-    first: z.string().min(1, "First name is required"),
-    middle: z.string().optional(),
-    last: z.string().min(1, "Last name is required"),
-  }),
-  relationship: z.string().min(1, "Relationship is required"),
+  name: z.string().min(1, "Name is required"),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
+  gender: z.enum(["Male", "Female", "Another"]),
   ssn: z.string().optional(),
-  gender: z.string().min(1, "Gender is required"),
-  citizenship: z.boolean(),
-  alienRegistrationNumber: z.string().optional(),
-  residencyDate: z.string().min(1, "Residency date is required"),
-  maritalStatus: z.string().min(1, "Marital status is required"),
-  educationLevel: z.string().min(1, "Education level is required"),
-  veteran: z.boolean(),
-  disabled: z.boolean(),
-  pregnant: z.boolean(),
-  student: z.boolean(),
-  schoolName: z.string().optional(),
-  temporarilyAway: z.boolean(),
-  awayDates: z.object({
-    start: z.string(),
-    end: z.string(),
-    reason: z.string(),
-  }).optional(),
-  applyingForBenefits: z.boolean(),
-  programs: z.array(z.string()).optional(),
-  race: z.string().optional(),
-  ethnicity: z.string().optional(),
+  isUSCitizen: z.boolean(),
+  immigrationStatus: z.string().optional(),
+  relationship: z.enum(["Spouse", "Child", "Parent", "Sibling", "Friend", "Other"]),
+  otherRelationship: z.string().optional(),
+  livingArrangement: z.enum(["Full time", "Part time"]),
 }).refine(
   (data) => {
-    if (!data.citizenship && !data.alienRegistrationNumber) {
+    if (!data.isUSCitizen && !data.immigrationStatus) {
       return false;
     }
     return true;
   },
   {
-    message: "Alien registration number is required for non-citizens",
-    path: ["alienRegistrationNumber"],
+    message: "Immigration status is required for non-citizens",
+    path: ["immigrationStatus"],
   }
 ).refine(
   (data) => {
-    if (data.student && !data.schoolName) {
+    if (data.relationship === "Other" && !data.otherRelationship) {
       return false;
     }
     return true;
   },
   {
-    message: "School name is required for students",
-    path: ["schoolName"],
-  }
-).refine(
-  (data) => {
-    if (data.temporarilyAway && !data.awayDates) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: "Away dates and reason are required",
-    path: ["awayDates"],
+    message: "Please specify the relationship",
+    path: ["otherRelationship"],
   }
 );
 
 export const householdSchema = z.object({
-  members: z.array(householdMemberSchema).min(1, "At least one household member is required"),
+  numberOfPeople: z.number().min(0, "Number of people must be 0 or more"),
+  members: z.array(householdMemberSchema),
 });
 
-// Step 4: Income
-export const earnedIncomeSchema = z.object({
+// Step 3: Race and Language
+export const raceAndLanguageSchema = z.object({
+  race: z.array(z.string()).min(1, "Please select at least one race"),
+  isHispanicOrLatino: z.boolean(),
+  preferredLanguage: z.string().min(1, "Preferred language is required"),
+});
+
+// Step 4: Home and Living
+export const homeAndLivingSchema = z.object({
+  housingType: z.enum(["Rent", "Own", "Live with someone else"]),
+  monthlyPayment: z.number().min(0, "Monthly payment must be 0 or more"),
+  utilities: z.array(z.string()),
+});
+
+// Step 5: Income
+export const incomeSourceSchema = z.object({
   id: z.string(),
   personId: z.string().min(1, "Person is required"),
-  employerName: z.string().min(1, "Employer name is required"),
-  payRate: z.number().min(0, "Pay rate must be positive"),
-  payFrequency: z.enum(["weekly", "biweekly", "monthly"]),
-  hoursPerWeek: z.number().min(0).max(168),
-  startDate: z.string().min(1, "Start date is required"),
-  nextPayDate: z.string().min(1, "Next pay date is required"),
-});
-
-export const unearnedIncomeSchema = z.object({
-  type: z.string().min(1, "Income type is required"),
-  personId: z.string().min(1, "Person is required"),
-  amount: z.number().min(0, "Amount must be positive"),
-  frequency: z.enum(["weekly", "biweekly", "monthly"]),
-});
-
-export const incomeInfoSchema = z.object({
-  hasEarnedIncome: z.boolean(),
-  earnedIncome: z.array(earnedIncomeSchema),
-  unearnedIncome: z.array(unearnedIncomeSchema),
-  jobLossLast60Days: z.boolean(),
-  jobLossDetails: z.string().optional(),
-  thirdPartyBillPayment: z.boolean(),
-  thirdPartyDetails: z.string().optional(),
-  daycareExpenses: z.boolean(),
-  daycareAmount: z.number().optional(),
-  childSupportPaid: z.boolean(),
-  childSupportAmount: z.number().optional(),
+  sourceType: z.enum(["work", "Social Security", "SSI", "Unemployment", "Child support", "Veterans benefits", "Retirement"]),
+  employerName: z.string().optional(),
+  amount: z.number().min(0, "Amount must be 0 or more"),
+  frequency: z.enum(["Every week", "Every two weeks", "Twice a month", "Monthly"]),
+  proofOfIncome: z.any().optional(),
 }).refine(
   (data) => {
-    if (data.jobLossLast60Days && !data.jobLossDetails) {
+    if (data.sourceType === "work" && !data.employerName) {
       return false;
     }
     return true;
   },
   {
-    message: "Please provide job loss details",
-    path: ["jobLossDetails"],
-  }
-).refine(
-  (data) => {
-    if (data.thirdPartyBillPayment && !data.thirdPartyDetails) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: "Please provide third-party payment details",
-    path: ["thirdPartyDetails"],
-  }
-).refine(
-  (data) => {
-    if (data.daycareExpenses && !data.daycareAmount) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: "Please provide daycare expense amount",
-    path: ["daycareAmount"],
-  }
-).refine(
-  (data) => {
-    if (data.childSupportPaid && !data.childSupportAmount) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: "Please provide child support amount",
-    path: ["childSupportAmount"],
+    message: "Employer name is required for work income",
+    path: ["employerName"],
   }
 );
 
-// Step 5: Resources
-export const assetSchema = z.object({
-  id: z.string(),
-  type: z.string().min(1, "Asset type is required"),
-  ownerIds: z.array(z.string()).min(1, "At least one owner is required"),
-  institution: z.string().min(1, "Institution is required"),
-  accountType: z.string().min(1, "Account type is required"),
-  accountNumber: z.string().optional(),
-  balance: z.number().min(0, "Balance must be positive"),
-  institutionAddress: z.string().min(1, "Institution address is required"),
+export const incomeSchema = z.object({
+  hasWorkIncome: z.boolean(),
+  sources: z.array(incomeSourceSchema),
 });
 
-export const resourcesInfoSchema = z.object({
-  assets: z.array(assetSchema),
-  lotteryWinnings: z.boolean(),
-  lotteryAmount: z.number().optional(),
-  assetTransfers: z.boolean(),
-  transferDetails: z.string().optional(),
+// Step 6: Expenses
+export const expenseSchema = z.object({
+  type: z.enum(["childCare", "childSupport", "healthCosts", "other"]),
+  hasExpense: z.boolean(),
+  amount: z.number().optional(),
+  frequency: z.enum(["Every week", "Every two weeks", "Twice a month", "Monthly"]).optional(),
+  description: z.string().optional(),
 }).refine(
   (data) => {
-    if (data.lotteryWinnings && (!data.lotteryAmount || data.lotteryAmount < 4250)) {
+    if (data.hasExpense && (!data.amount || data.amount <= 0)) {
       return false;
     }
     return true;
   },
   {
-    message: "Lottery winnings must be $4,250 or more",
-    path: ["lotteryAmount"],
+    message: "Amount is required if you have this expense",
+    path: ["amount"],
   }
 ).refine(
   (data) => {
-    if (data.assetTransfers && !data.transferDetails) {
+    if (data.hasExpense && !data.frequency) {
       return false;
     }
     return true;
   },
   {
-    message: "Please provide asset transfer details",
-    path: ["transferDetails"],
+    message: "Frequency is required if you have this expense",
+    path: ["frequency"],
   }
-);
-
-// Step 6: Program-Specific (simplified schemas - will expand as needed)
-export const tanfInfoSchema = z.object({
-  childParentInfo: z.array(z.object({
-    childId: z.string(),
-    parentId: z.string(),
-    immunizationStatus: z.string(),
-  })),
-});
-
-export const snapInfoSchema = z.object({
-  headOfHousehold: z.string().min(1, "Head of household is required"),
-  mealPrepSeparation: z.boolean(),
-  roomersBoarders: z.boolean(),
-  medicalExpenses: z.array(z.object({
-    personId: z.string(),
-    amount: z.number().min(0),
-    description: z.string(),
-  })),
-  shelterCosts: z.object({
-    rent: z.number().min(0),
-    propertyTax: z.number().min(0),
-    homeInsurance: z.number().min(0),
-  }),
-  heatingMethod: z.string().min(1, "Heating method is required"),
-  temporaryHousing: z.boolean(),
-});
-
-// Step 7: Authorized Representative
-export const authorizedRepresentativeSchema = z.object({
-  hasRepresentative: z.boolean(),
-  name: z.string().optional(),
-  address: z.string().optional(),
-  phone: z.string().optional(),
-  permissions: z.object({
-    apply: z.boolean(),
-    receiveNotices: z.boolean(),
-    useSnapBenefits: z.boolean(),
-  }).optional(),
-}).refine(
+).refine(
   (data) => {
-    if (data.hasRepresentative) {
-      return data.name && data.address && data.phone;
+    if (data.type === "other" && data.hasExpense && !data.description) {
+      return false;
     }
     return true;
   },
   {
-    message: "All representative fields are required",
+    message: "Description is required for other expenses",
+    path: ["description"],
   }
 );
 
-// Step 8: Review & Acknowledgements
-export const reviewAcknowledgementsSchema = z.object({
-  truthfulness: z.boolean().refine((val) => val === true, {
-    message: "You must certify truthfulness",
+export const expensesSchema = z.object({
+  childCare: expenseSchema,
+  childSupport: expenseSchema,
+  healthCosts: expenseSchema,
+  other: expenseSchema,
+  proofOfRent: z.any().optional(),
+  proofOfChildCare: z.any().optional(),
+});
+
+// Step 7: Health Coverage
+export const healthCoverageSchema = z.object({
+  hasHealthInsurance: z.boolean(),
+  insuranceType: z.enum(["Medicaid", "Job insurance", "Other"]).optional(),
+  otherInsuranceType: z.string().optional(),
+  hasPregnantPerson: z.boolean(),
+  hasDisabilityOrSpecialNeed: z.boolean(),
+}).refine(
+  (data) => {
+    if (data.hasHealthInsurance && !data.insuranceType) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Insurance type is required if you have health insurance",
+    path: ["insuranceType"],
+  }
+).refine(
+  (data) => {
+    if (data.insuranceType === "Other" && !data.otherInsuranceType) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Please specify the insurance type",
+    path: ["otherInsuranceType"],
+  }
+);
+
+// Step 8: Work and School
+export const workAndSchoolSchema = z.object({
+  hasAdultInSchoolOrTraining: z.boolean(),
+  hoursPerWeek: z.number().optional(),
+  isAnyoneLookingForWork: z.boolean(),
+}).refine(
+  (data) => {
+    if (data.hasAdultInSchoolOrTraining && (!data.hoursPerWeek || data.hoursPerWeek <= 0)) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Hours per week is required if someone is in school or training",
+    path: ["hoursPerWeek"],
+  }
+);
+
+// Step 9: Food and Basic Needs
+export const foodAndBasicNeedsSchema = z.object({
+  buyAndCookTogether: z.boolean(),
+  needFoodHelpRightAway: z.boolean(),
+  hasReceivedBenefitsBefore: z.boolean(),
+  previousState: z.string().optional(),
+  hasBenefitsStoppedOrPaused: z.boolean(),
+}).refine(
+  (data) => {
+    if (data.hasReceivedBenefitsBefore && !data.previousState) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Previous state is required if you received benefits before",
+    path: ["previousState"],
+  }
+);
+
+// Step 10: Final Check & Signature
+export const finalCheckAndSignatureSchema = z.object({
+  everythingCorrect: z.boolean().refine((val) => val === true, {
+    message: "You must confirm everything is correct",
   }),
-  changeReporting: z.boolean().refine((val) => val === true, {
-    message: "You must acknowledge change reporting requirements",
-  }),
-  penalties: z.boolean().refine((val) => val === true, {
-    message: "You must acknowledge penalties",
-  }),
-  consentToDataSharing: z.boolean(),
-  completedBySelf: z.boolean(),
-  completedByDetails: z.string().optional(),
   signature: z.string().min(1, "Signature is required"),
-  date: z.string().min(1, "Date is required"),
-}).refine(
-  (data) => {
-    if (!data.completedBySelf && !data.completedByDetails) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: "Please provide details if form was not completed by you",
-    path: ["completedByDetails"],
-  }
-);
+  signatureDate: z.string().min(1, "Signature date is required"),
+});
 
 // Type exports
-export type ProgramSelection = z.infer<typeof programSelectionSchema>;
-export type ApplicantInfo = z.infer<typeof applicantInfoSchema>;
+export type AboutYou = z.infer<typeof aboutYouSchema>;
 export type HouseholdMember = z.infer<typeof householdMemberSchema>;
 export type Household = z.infer<typeof householdSchema>;
-export type EarnedIncome = z.infer<typeof earnedIncomeSchema>;
-export type UnearnedIncome = z.infer<typeof unearnedIncomeSchema>;
-export type IncomeInfo = z.infer<typeof incomeInfoSchema>;
-export type Asset = z.infer<typeof assetSchema>;
-export type ResourcesInfo = z.infer<typeof resourcesInfoSchema>;
-export type TanfInfo = z.infer<typeof tanfInfoSchema>;
-export type SnapInfo = z.infer<typeof snapInfoSchema>;
-export type AuthorizedRepresentative = z.infer<typeof authorizedRepresentativeSchema>;
-export type ReviewAcknowledgements = z.infer<typeof reviewAcknowledgementsSchema>;
-
+export type RaceAndLanguage = z.infer<typeof raceAndLanguageSchema>;
+export type HomeAndLiving = z.infer<typeof homeAndLivingSchema>;
+export type IncomeSource = z.infer<typeof incomeSourceSchema>;
+export type Income = z.infer<typeof incomeSchema>;
+export type Expense = z.infer<typeof expenseSchema>;
+export type Expenses = z.infer<typeof expensesSchema>;
+export type HealthCoverage = z.infer<typeof healthCoverageSchema>;
+export type WorkAndSchool = z.infer<typeof workAndSchoolSchema>;
+export type FoodAndBasicNeeds = z.infer<typeof foodAndBasicNeedsSchema>;
+export type FinalCheckAndSignature = z.infer<typeof finalCheckAndSignatureSchema>;

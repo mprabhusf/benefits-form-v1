@@ -13,12 +13,7 @@ interface FormStore {
   resetForm: () => void;
 }
 
-const initialState: Partial<FormData> = {
-  step1_programSelection: {
-    programs: [],
-    tanfNoSnap: false,
-  },
-};
+const initialState: Partial<FormData> = {};
 
 export const useFormStore = create<FormStore>((set, get) => ({
   currentStep: 1,
@@ -31,4 +26,3 @@ export const useFormStore = create<FormStore>((set, get) => ({
   getFormData: () => get().formData,
   resetForm: () => set({ formData: initialState, currentStep: 1 }),
 }));
-
