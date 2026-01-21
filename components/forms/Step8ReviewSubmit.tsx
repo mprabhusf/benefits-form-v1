@@ -90,12 +90,12 @@ export default function Step8ReviewSubmit({ onBack }: Step8ReviewSubmitProps) {
           </div>
 
           <div className="pt-4 border-t">
-            <p className="text-sm text-muted-foreground">
-              <em>
-                Note: This is a summary view. In a production application, you would
-                be able to click "Edit" links to go back and modify any section.
-              </em>
-            </p>
+                    <p className="text-sm text-muted-foreground">
+                      <em>
+                        Note: This is a summary view. In a production application, you would
+                        be able to click &quot;Edit&quot; links to go back and modify any section.
+                      </em>
+                    </p>
           </div>
         </CardContent>
       </Card>
@@ -156,7 +156,7 @@ export default function Step8ReviewSubmit({ onBack }: Step8ReviewSubmitProps) {
             {errors.changeReporting && (
               <p className="text-sm text-red-500">{errors.changeReporting.message}</p>
             )}
-            <Accordion type="single" collapsible>
+            <Accordion type="single">
               <AccordionItem value="change-reporting">
                 <AccordionTrigger value="change-reporting">
                   <span className="text-sm text-muted-foreground">
@@ -204,7 +204,7 @@ export default function Step8ReviewSubmit({ onBack }: Step8ReviewSubmitProps) {
             {errors.penalties && (
               <p className="text-sm text-red-500">{errors.penalties.message}</p>
             )}
-            <Accordion type="single" collapsible>
+            <Accordion type="single">
               <AccordionItem value="penalties">
                 <AccordionTrigger value="penalties">
                   <span className="text-sm text-muted-foreground">

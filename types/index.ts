@@ -30,7 +30,7 @@ export interface ApplicantInfo {
   city: string;
   county: string;
   zip: string;
-  email: string;
+  email?: string;
   primaryPhone: string;
   alternatePhone?: string;
   primaryLanguage: string;

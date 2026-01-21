@@ -129,7 +129,7 @@ export default function Step1ProgramSelection({ onNext }: Step1ProgramSelectionP
         </CardContent>
       </Card>
 
-      <Accordion type="single" collapsible>
+      <Accordion type="single">
         <AccordionItem value="nondiscrimination">
           <AccordionTrigger value="nondiscrimination">
             View Civil Rights & Non-Discrimination Policy
