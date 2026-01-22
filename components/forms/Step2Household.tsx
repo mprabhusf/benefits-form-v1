@@ -11,6 +11,9 @@ import { Select } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2, Plus } from "lucide-react";
+import { MultiFileUpload } from "@/components/ui/multi-file-upload";
+import { processFilesWithOCR } from "@/lib/ocr";
+import React from "react";
 
 const RELATIONSHIPS = ["Spouse", "Child", "Parent", "Sibling", "Friend", "Other"];
 const GENDERS = ["Male", "Female", "Another"];
@@ -33,6 +36,8 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
     control,
     handleSubmit,
     watch,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<Household>({
     resolver: zodResolver(householdSchema),
@@ -46,6 +51,56 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
     control,
     name: "members",
   });
+
+  // Component for file upload per household member
+  const MemberFileUploadComponent = ({ index, setValue }: { index: number; setValue: any }) => {
+    const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
+    const [isProcessingOCR, setIsProcessingOCR] = React.useState(false);
+
+    const handleFilesChange = async (files: File[]) => {
+      setUploadedFiles(files);
+      
+      // Process files with OCR when they are uploaded
+      if (files.length > 0) {
+        setIsProcessingOCR(true);
+        try {
+          const ocrResult = await processFilesWithOCR(files);
+          
+          // Pre-fill form fields with OCR results for this household member
+          if (ocrResult.firstName) {
+            setValue(`members.${index}.firstName`, ocrResult.firstName);
+          }
+          if (ocrResult.lastName) {
+            setValue(`members.${index}.lastName`, ocrResult.lastName);
+          }
+          if (ocrResult.dateOfBirth) {
+            setValue(`members.${index}.dateOfBirth`, ocrResult.dateOfBirth);
+          }
+          if (ocrResult.ssn) {
+            setValue(`members.${index}.ssn`, ocrResult.ssn);
+          }
+        } catch (error) {
+          console.error("OCR processing failed:", error);
+        } finally {
+          setIsProcessingOCR(false);
+        }
+      }
+    };
+
+    return (
+      <>
+        <MultiFileUpload
+          onFilesChange={handleFilesChange}
+          accept=".pdf,.jpeg,.jpg,.png"
+        />
+        {isProcessingOCR && (
+          <p className="text-xs text-blue-600 italic">
+            Processing files with OCR...
+          </p>
+        )}
+      </>
+    );
+  };
 
   const numberOfPeople = watch("numberOfPeople");
 
@@ -62,8 +117,19 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
     onNext();
   };
 
+  const handleNextClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    // Use getValues() instead of watch() - it doesn't trigger validation
+    const formData = getValues();
+    updateFormData("step2_household", formData as Household);
+    onNext();
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={(e) => { e.preventDefault(); handleNextClick(e as any); }} className="space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">Who Lives With You (Household)</h2>
         <p className="text-muted-foreground">
@@ -114,21 +180,62 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
+                
+                <Card className="mb-4">
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <p className="text-sm text-gray-700">
+                        Adding details made easy! Upload household member IDs and we&apos;ll fill up the info for you
+                      </p>
+                      <MemberFileUploadComponent index={index} setValue={setValue} />
+                    </div>
+                  </CardContent>
+                </Card>
+
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="font-semibold">Tell us their name. *</Label>
-                    <Controller
-                      name={`members.${index}.name`}
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          className={
-                            errors.members?.[index]?.name ? "border-red-500" : ""
-                          }
-                        />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="font-semibold">First Name *</Label>
+                      <Controller
+                        name={`members.${index}.firstName`}
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder="First name"
+                            className={
+                              errors.members?.[index]?.firstName ? "border-red-500" : ""
+                            }
+                          />
+                        )}
+                      />
+                      {errors.members?.[index]?.firstName && (
+                        <p className="text-sm text-red-500">
+                          {errors.members[index]?.firstName?.message}
+                        </p>
                       )}
-                    />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-semibold">Last Name *</Label>
+                      <Controller
+                        name={`members.${index}.lastName`}
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder="Last name"
+                            className={
+                              errors.members?.[index]?.lastName ? "border-red-500" : ""
+                            }
+                          />
+                        )}
+                      />
+                      {errors.members?.[index]?.lastName && (
+                        <p className="text-sm text-red-500">
+                          {errors.members[index]?.lastName?.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -316,7 +423,8 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
               onClick={() =>
                 append({
                   id: `member-${Date.now()}-${Math.random()}`,
-                  name: "",
+                  firstName: "",
+                  lastName: "",
                   dateOfBirth: "",
                   gender: "Male",
                   isUSCitizen: true,
@@ -337,7 +445,7 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
         <Button type="button" variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button type="submit">Next</Button>
+        <Button type="button" onClick={handleNextClick}>Next</Button>
       </div>
     </form>
   );

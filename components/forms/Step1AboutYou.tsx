@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { aboutYouSchema, type AboutYou } from "@/lib/schemas";
@@ -12,6 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileInput } from "@/components/ui/file-input";
+import { MultiFileUpload } from "@/components/ui/multi-file-upload";
+import { processFilesWithOCR } from "@/lib/ocr";
 
 interface Step1AboutYouProps {
   onNext: () => void;
@@ -25,6 +28,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
     control,
     handleSubmit,
     watch,
+    getValues,
     setValue,
     formState: { errors },
   } = useForm<AboutYou>({
@@ -65,14 +69,93 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
     onNext();
   };
 
+  const handleNextClick = () => {
+    console.log("🔵 handleNextClick called - Step 1");
+    try {
+      // Save form data without validation - use getValues which never throws
+      console.log("🔵 Getting form values...");
+      const formData = getValues();
+      console.log("🔵 Form data:", formData);
+      updateFormData("step1_aboutYou", formData as AboutYou);
+      console.log("🔵 Form data saved to store");
+    } catch (error) {
+      console.error("🔴 Error saving form data:", error);
+    }
+    // Always navigate - this should never fail
+    console.log("🔵 Checking onNext function:", onNext, typeof onNext);
+    if (onNext && typeof onNext === 'function') {
+      console.log("🔵 Calling onNext()...");
+      onNext();
+      console.log("🔵 onNext() called successfully");
+    } else {
+      console.error("🔴 onNext is not a function or is undefined!");
+    }
+  };
+
+  const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
+  const [isProcessingOCR, setIsProcessingOCR] = React.useState(false);
+
+  const handleFilesChange = async (files: File[]) => {
+    setUploadedFiles(files);
+    
+    // Process files with OCR when they are uploaded
+    if (files.length > 0) {
+      setIsProcessingOCR(true);
+      try {
+        const ocrResult = await processFilesWithOCR(files);
+        
+        // Pre-fill form fields with OCR results
+        if (ocrResult.firstName) setValue("firstName", ocrResult.firstName);
+        if (ocrResult.lastName) setValue("lastName", ocrResult.lastName);
+        if (ocrResult.middleName) {
+          setValue("hasMiddleName", true);
+          setValue("middleName", ocrResult.middleName);
+        }
+        if (ocrResult.dateOfBirth) setValue("dateOfBirth", ocrResult.dateOfBirth);
+        if (ocrResult.ssn) setValue("ssn", ocrResult.ssn);
+        if (ocrResult.phoneNumber) setValue("phoneNumber", ocrResult.phoneNumber);
+        if (ocrResult.email) setValue("email", ocrResult.email);
+        if (ocrResult.address) {
+          if (ocrResult.address.street) setValue("homeAddress.street", ocrResult.address.street);
+          if (ocrResult.address.city) setValue("homeAddress.city", ocrResult.address.city);
+          if (ocrResult.address.state) setValue("homeAddress.state", ocrResult.address.state);
+          if (ocrResult.address.zip) setValue("homeAddress.zip", ocrResult.address.zip);
+        }
+      } catch (error) {
+        console.error("OCR processing failed:", error);
+      } finally {
+        setIsProcessingOCR(false);
+      }
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <div className="space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">About You (The Person Applying)</h2>
         <p className="text-muted-foreground">
           Please provide your personal information.
         </p>
       </div>
+
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <p className="text-sm text-gray-700">
+              Adding details made easy! Upload household member IDs and we&apos;ll fill up the info for you
+            </p>
+            <MultiFileUpload
+              onFilesChange={handleFilesChange}
+              accept=".pdf,.jpeg,.jpg,.png"
+            />
+            {isProcessingOCR && (
+              <p className="text-xs text-blue-600 italic">
+                Processing files with OCR...
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -360,9 +443,19 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
       </Card>
 
       <div className="flex justify-end pt-4">
-        <Button type="submit">Next</Button>
+        <Button 
+          type="button" 
+          onClick={(e) => {
+            console.log("🟢 Button clicked!", e);
+            e.preventDefault();
+            e.stopPropagation();
+            handleNextClick();
+          }}
+        >
+          Next
+        </Button>
       </div>
-    </form>
+    </div>
   );
 }
 

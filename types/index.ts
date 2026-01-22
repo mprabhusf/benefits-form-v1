@@ -31,7 +31,8 @@ export interface AboutYou {
 // Step 2: Who Lives With You (Household)
 export interface HouseholdMember {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   dateOfBirth: string;
   gender: "Male" | "Female" | "Another";
   ssn?: string;

@@ -33,6 +33,7 @@ export default function Step6Expenses({ onNext, onBack }: Step6ExpensesProps) {
     control,
     handleSubmit,
     watch,
+    getValues,
     setValue,
     formState: { errors },
   } = useForm<Expenses>({
@@ -59,6 +60,17 @@ export default function Step6Expenses({ onNext, onBack }: Step6ExpensesProps) {
 
   const onSubmit = (data: Expenses) => {
     updateFormData("step6_expenses", data);
+    onNext();
+  };
+
+  const handleNextClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    // Use getValues() instead of watch() - it doesn't trigger validation
+    const formData = getValues();
+    updateFormData("step6_expenses", formData as Expenses);
     onNext();
   };
 
@@ -175,7 +187,7 @@ export default function Step6Expenses({ onNext, onBack }: Step6ExpensesProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={(e) => { e.preventDefault(); handleNextClick(e as any); }} className="space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">Money You Pay (Expenses)</h2>
         <p className="text-muted-foreground">
@@ -231,7 +243,7 @@ export default function Step6Expenses({ onNext, onBack }: Step6ExpensesProps) {
         <Button type="button" variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button type="submit">Next</Button>
+        <Button type="button" onClick={handleNextClick}>Next</Button>
       </div>
     </form>
   );

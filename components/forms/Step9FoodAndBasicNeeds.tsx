@@ -25,6 +25,7 @@ export default function Step9FoodAndBasicNeeds({
     control,
     handleSubmit,
     watch,
+    getValues,
     formState: { errors },
   } = useForm<FoodAndBasicNeeds>({
     resolver: zodResolver(foodAndBasicNeedsSchema),
@@ -43,8 +44,19 @@ export default function Step9FoodAndBasicNeeds({
     onNext();
   };
 
+  const handleNextClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    // Use getValues() instead of watch() - it doesn't trigger validation
+    const formData = getValues();
+    updateFormData("step9_foodAndBasicNeeds", formData as FoodAndBasicNeeds);
+    onNext();
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={(e) => { e.preventDefault(); handleNextClick(e as any); }} className="space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">Food and Basic Needs (SNAP Requirements)</h2>
         <p className="text-muted-foreground">
@@ -177,7 +189,7 @@ export default function Step9FoodAndBasicNeeds({
         <Button type="button" variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button type="submit">Next</Button>
+        <Button type="button" onClick={handleNextClick}>Next</Button>
       </div>
     </form>
   );

@@ -56,7 +56,8 @@ export const aboutYouSchema = z.object({
 // Step 2: Household
 export const householdMemberSchema = z.object({
   id: z.string(),
-  name: z.string().min(1, "Name is required"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
   gender: z.enum(["Male", "Female", "Another"]),
   ssn: z.string().optional(),

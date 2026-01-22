@@ -24,6 +24,7 @@ export default function Step10FinalCheck({ onBack }: Step10FinalCheckProps) {
     control,
     handleSubmit,
     register,
+    getValues,
     formState: { errors },
   } = useForm<FinalCheckAndSignature>({
     resolver: zodResolver(finalCheckAndSignatureSchema),
@@ -44,8 +45,21 @@ export default function Step10FinalCheck({ onBack }: Step10FinalCheckProps) {
     // resetForm();
   };
 
+  const handleSubmitClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    // Use getValues() instead of watch() - it doesn't trigger validation
+    const formData = getValues();
+    updateFormData("step10_finalCheck", formData as FinalCheckAndSignature);
+    alert(
+      "Application submitted successfully! (This is a demo - no data was sent to a server)"
+    );
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={(e) => { e.preventDefault(); handleSubmitClick(e as any); }} className="space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">Final Check & Signature</h2>
         <p className="text-muted-foreground">
@@ -134,7 +148,7 @@ export default function Step10FinalCheck({ onBack }: Step10FinalCheckProps) {
         <Button type="button" variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button type="submit" size="lg">
+        <Button type="button" onClick={handleSubmitClick} size="lg">
           Submit Application
         </Button>
       </div>
