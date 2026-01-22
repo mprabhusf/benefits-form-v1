@@ -25,13 +25,9 @@ export default function Home() {
   }, [currentStep]);
 
   const handleNext = () => {
-    console.log("🟢 handleNext called in page.tsx");
-    console.log("🟢 Current step:", step);
     const nextStep = Math.min(step + 1, TOTAL_STEPS);
-    console.log("🟢 Next step will be:", nextStep);
     setStep(nextStep);
     setCurrentStep(nextStep);
-    console.log("🟢 State updated, step should now be:", nextStep);
   };
 
   const handleBack = () => {

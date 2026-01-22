@@ -11,7 +11,7 @@ import { Select } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CurrencyInput } from "@/components/ui/currency-input";
-import { FileInput } from "@/components/ui/file-input";
+import { MultiFileUpload } from "@/components/ui/multi-file-upload";
 import { Textarea } from "@/components/ui/textarea";
 
 const FREQUENCIES = [
@@ -202,39 +202,47 @@ export default function Step6Expenses({ onNext, onBack }: Step6ExpensesProps) {
         <CardContent className="space-y-4">
           {renderExpenseField(
             "childCare",
-            "Do you pay for child care?",
+            "Child Care",
             "If yes: Amount & Frequency"
           )}
 
           {renderExpenseField(
             "childSupport",
-            "Do you pay child support?",
+            "Child Support",
             "If yes: Amount & Frequency"
           )}
 
           {renderExpenseField(
             "healthCosts",
-            "Do you pay health costs because you are older or have a disability?",
+            "Health Costs (Older or Disabled)",
             "If yes: Amount & Frequency"
           )}
 
           {renderExpenseField(
             "other",
-            "Do you have any other regular expenses you want to tell us about?",
+            "Other Regular Expenses",
             "If yes: Amount, Frequency & Description"
           )}
 
           <div className="space-y-4 pt-4 border-t">
-            <FileInput
-              label="Can you upload proof of rent or bills?"
-              accept="image/*,.pdf"
-              onFileChange={(file) => setValue("proofOfRent", file)}
-            />
-            <FileInput
-              label="Can you upload proof of child care costs?"
-              accept="image/*,.pdf"
-              onFileChange={(file) => setValue("proofOfChildCare", file)}
-            />
+            <div className="space-y-2">
+              <Label className="font-semibold">Can you upload proof of rent or bills?</Label>
+              <MultiFileUpload
+                onFilesChange={(files) => {
+                  setValue("proofOfRent", files.length > 0 ? files[0] : null);
+                }}
+                accept=".pdf,.jpeg,.jpg,.png"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="font-semibold">Can you upload proof of child care costs?</Label>
+              <MultiFileUpload
+                onFilesChange={(files) => {
+                  setValue("proofOfChildCare", files.length > 0 ? files[0] : null);
+                }}
+                accept=".pdf,.jpeg,.jpg,.png"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

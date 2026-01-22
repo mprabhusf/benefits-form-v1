@@ -144,7 +144,7 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="numberOfPeople" className="font-semibold">
-              How many people live with you? *
+              Number of People *
             </Label>
             <Controller
               name="numberOfPeople"
@@ -239,7 +239,7 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="font-semibold">What is their date of birth? *</Label>
+                    <Label className="font-semibold">Date of Birth *</Label>
                     <Controller
                       name={`members.${index}.dateOfBirth`}
                       control={control}
@@ -259,7 +259,7 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
 
                   <div className="space-y-2">
                     <Label className="font-semibold">
-                      Are they male, female, or another gender? *
+                      Gender *
                     </Label>
                     <Controller
                       name={`members.${index}.gender`}
@@ -283,7 +283,7 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
                   </div>
 
                   <div className="space-y-2">
-                    <Label>What is their Social Security number? (Optional)</Label>
+                    <Label>Social Security Number (Optional)</Label>
                     <Controller
                       name={`members.${index}.ssn`}
                       control={control}
@@ -303,7 +303,7 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="font-semibold">Are they a U.S. citizen? *</Label>
+                    <Label className="font-semibold">U.S. Citizen *</Label>
                     <Controller
                       name={`members.${index}.isUSCitizen`}
                       control={control}
@@ -321,7 +321,7 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
                     {watch(`members.${index}.isUSCitizen`) === false && (
                       <div className="mt-2">
                         <Label className="font-semibold">
-                          If not, what is their immigration status? *
+                          Immigration Status *
                         </Label>
                         <Controller
                           name={`members.${index}.immigrationStatus`}
@@ -350,7 +350,7 @@ export default function Step2Household({ onNext, onBack }: Step2HouseholdProps) 
 
                   <div className="space-y-2">
                     <Label className="font-semibold">
-                      What is this person&apos;s relationship to you? *
+                      Relationship *
                     </Label>
                     <Controller
                       name={`members.${index}.relationship`}

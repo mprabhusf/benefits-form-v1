@@ -71,7 +71,7 @@ export default function Step9FoodAndBasicNeeds({
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label className="font-semibold">
-              Do you buy and cook food together with the people in your home? *
+              Buy and Cook Food Together *
             </Label>
             <Controller
               name="buyAndCookTogether"
@@ -91,7 +91,7 @@ export default function Step9FoodAndBasicNeeds({
 
           <div className="space-y-2">
             <Label className="font-semibold">
-              Do you need food help right away? *
+              Need Food Help Right Away *
             </Label>
             <Controller
               name="needFoodHelpRightAway"
@@ -140,7 +140,7 @@ export default function Step9FoodAndBasicNeeds({
             <div className="mt-4 p-4 bg-gray-50 rounded-md">
               <div className="space-y-2">
                 <Label htmlFor="previousState" className="font-semibold">
-                  If yes, what state? *
+                  Previous State *
                 </Label>
                 <Controller
                   name="previousState"

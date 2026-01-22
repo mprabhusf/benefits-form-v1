@@ -69,26 +69,21 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
     onNext();
   };
 
-  const handleNextClick = () => {
-    console.log("🔵 handleNextClick called - Step 1");
+  const handleNextClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     try {
       // Save form data without validation - use getValues which never throws
-      console.log("🔵 Getting form values...");
       const formData = getValues();
-      console.log("🔵 Form data:", formData);
       updateFormData("step1_aboutYou", formData as AboutYou);
-      console.log("🔵 Form data saved to store");
     } catch (error) {
-      console.error("🔴 Error saving form data:", error);
+      // Ignore errors
     }
-    // Always navigate - this should never fail
-    console.log("🔵 Checking onNext function:", onNext, typeof onNext);
+    // Always navigate
     if (onNext && typeof onNext === 'function') {
-      console.log("🔵 Calling onNext()...");
       onNext();
-      console.log("🔵 onNext() called successfully");
-    } else {
-      console.error("🔴 onNext is not a function or is undefined!");
     }
   };
 
@@ -165,7 +160,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName" className="font-semibold">
-                What is your first name? *
+                First Name *
               </Label>
               <Input
                 id="firstName"
@@ -178,7 +173,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastName" className="font-semibold">
-                What is your last name? *
+                Last Name *
               </Label>
               <Input
                 id="lastName"
@@ -203,7 +198,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
                     onCheckedChange={field.onChange}
                   />
                   <Label htmlFor="hasMiddleName" className="font-normal cursor-pointer">
-                    Do you have a middle name?
+                    Middle Name
                   </Label>
                 </div>
               )}
@@ -211,7 +206,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
             {hasMiddleName && (
               <div className="mt-2">
                 <Label htmlFor="middleName" className="font-semibold">
-                  What is your middle name? *
+                  Middle Name *
                 </Label>
                 <Input
                   id="middleName"
@@ -227,7 +222,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
 
           <div className="space-y-2">
             <Label htmlFor="dateOfBirth" className="font-semibold">
-              What is your date of birth? *
+              Date of Birth *
             </Label>
             <Input
               id="dateOfBirth"
@@ -242,7 +237,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
 
           <div className="space-y-2">
             <Label htmlFor="sex" className="font-semibold">
-              What is your sex? *
+              Gender *
             </Label>
             <Controller
               name="sex"
@@ -266,7 +261,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
 
           <div className="space-y-2">
             <Label htmlFor="ssn" className="font-semibold">
-              What is your Social Security number? *
+              Social Security Number *
             </Label>
             <Controller
               name="ssn"
@@ -300,7 +295,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="homeStreet" className="font-semibold">
-              What is your home address? *
+              Home Address *
             </Label>
             <div className="space-y-2">
               <Input
@@ -348,7 +343,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
             />
             {!mailingAddressSame && (
               <div className="mt-2 space-y-2 p-4 bg-gray-50 rounded-md">
-                <Label className="font-semibold">What is your mailing address? *</Label>
+                <Label className="font-semibold">Mailing Address *</Label>
                 <Input
                   placeholder="Street address"
                   {...register("mailingAddress.street")}
@@ -380,7 +375,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="phoneNumber" className="font-semibold">
-              What is the best phone number to reach you? *
+              Phone Number *
             </Label>
             <Input
               id="phoneNumber"
@@ -394,7 +389,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">What is your email?</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
@@ -408,7 +403,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
 
           <div className="space-y-2">
             <Label htmlFor="contactPreference" className="font-semibold">
-              What is the best way to contact you? *
+              Contact Preference *
             </Label>
             <Controller
               name="contactPreference"
@@ -433,10 +428,13 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
           </div>
 
           <div className="space-y-2">
-            <FileInput
-              label="Can you upload proof of identity?"
-              accept="image/*,.pdf"
-              onFileChange={(file) => setValue("proofOfIdentity", file)}
+            <Label className="font-semibold">Can you upload proof of identity?</Label>
+            <MultiFileUpload
+              onFilesChange={(files) => {
+                // Store the first file or null
+                setValue("proofOfIdentity", files.length > 0 ? files[0] : null);
+              }}
+              accept=".pdf,.jpeg,.jpg,.png"
             />
           </div>
         </CardContent>
@@ -445,12 +443,7 @@ export default function Step1AboutYou({ onNext }: Step1AboutYouProps) {
       <div className="flex justify-end pt-4">
         <Button 
           type="button" 
-          onClick={(e) => {
-            console.log("🟢 Button clicked!", e);
-            e.preventDefault();
-            e.stopPropagation();
-            handleNextClick();
-          }}
+          onClick={(e) => handleNextClick(e)}
         >
           Next
         </Button>

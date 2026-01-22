@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CurrencyInput } from "@/components/ui/currency-input";
 
@@ -72,7 +72,7 @@ export default function Step4HomeAndLiving({
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="housingType" className="font-semibold">
-              Do you rent, own, or live with someone else? *
+              Housing Type *
             </Label>
             <Controller
               name="housingType"
@@ -99,7 +99,7 @@ export default function Step4HomeAndLiving({
 
           <div className="space-y-2">
             <Label htmlFor="monthlyPayment" className="font-semibold">
-              How much do you pay each month for your home? *
+              Monthly Payment *
             </Label>
             <Controller
               name="monthlyPayment"
@@ -120,37 +120,19 @@ export default function Step4HomeAndLiving({
 
           <div className="space-y-2">
             <Label className="font-semibold">
-              Do you pay for electricity, gas, water, or phone? * (Select all that
-              apply)
+              Utilities * (Select all that apply)
             </Label>
             <Controller
               name="utilities"
               control={control}
               render={({ field }) => (
-                <div className="space-y-2">
-                  {UTILITIES.map((utility) => (
-                    <div key={utility} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`utility-${utility}`}
-                        checked={field.value?.includes(utility)}
-                        onCheckedChange={(checked) => {
-                          const current = field.value || [];
-                          if (checked) {
-                            field.onChange([...current, utility]);
-                          } else {
-                            field.onChange(current.filter((u) => u !== utility));
-                          }
-                        }}
-                      />
-                      <Label
-                        htmlFor={`utility-${utility}`}
-                        className="font-normal cursor-pointer"
-                      >
-                        {utility}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
+                <MultiSelect
+                  id="utilities"
+                  options={UTILITIES}
+                  value={field.value || []}
+                  onChange={(value) => field.onChange(value)}
+                  placeholder="Select utilities (select all that apply)"
+                />
               )}
             />
           </div>

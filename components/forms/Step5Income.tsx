@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CurrencyInput } from "@/components/ui/currency-input";
-import { FileInput } from "@/components/ui/file-input";
+import { MultiFileUpload } from "@/components/ui/multi-file-upload";
 import { Trash2, Plus } from "lucide-react";
 
 const INCOME_SOURCES = [
@@ -104,7 +104,7 @@ export default function Step5Income({ onNext, onBack }: Step5IncomeProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label className="font-semibold">Does anyone work for pay? *</Label>
+            <Label className="font-semibold">Work for Pay *</Label>
             <Controller
               name="hasWorkIncome"
               control={control}
@@ -160,7 +160,7 @@ export default function Step5Income({ onNext, onBack }: Step5IncomeProps) {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="font-semibold">Where do they work? *</Label>
+                          <Label className="font-semibold">Employer Name *</Label>
                           <Controller
                             name={`sources.${actualIndex}.employerName`}
                             control={control}
@@ -171,7 +171,7 @@ export default function Step5Income({ onNext, onBack }: Step5IncomeProps) {
                         </div>
                         <div className="space-y-2">
                           <Label className="font-semibold">
-                            How much do they make before taxes? *
+                            Amount Before Taxes *
                           </Label>
                           <Controller
                             name={`sources.${actualIndex}.amount`}
@@ -186,7 +186,7 @@ export default function Step5Income({ onNext, onBack }: Step5IncomeProps) {
                         </div>
                         <div className="space-y-2">
                           <Label className="font-semibold">
-                            How often do they get paid? *
+                            Pay Frequency *
                           </Label>
                           <Controller
                             name={`sources.${actualIndex}.frequency`}
@@ -204,12 +204,12 @@ export default function Step5Income({ onNext, onBack }: Step5IncomeProps) {
                           />
                         </div>
                         <div className="space-y-2">
-                          <FileInput
-                            label="Can you upload proof of income (like a pay stub)?"
-                            accept="image/*,.pdf"
-                            onFileChange={(file) =>
-                              setValue(`sources.${actualIndex}.proofOfIncome`, file)
-                            }
+                          <Label className="font-semibold">Can you upload proof of income (like a pay stub)?</Label>
+                          <MultiFileUpload
+                            onFilesChange={(files) => {
+                              setValue(`sources.${actualIndex}.proofOfIncome`, files.length > 0 ? files[0] : null);
+                            }}
+                            accept=".pdf,.jpeg,.jpg,.png"
                           />
                         </div>
                       </div>
@@ -246,63 +246,73 @@ export default function Step5Income({ onNext, onBack }: Step5IncomeProps) {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label className="font-semibold">
-              Does anyone get money from other sources? (Select all that apply)
+              Other Income Sources (Select all that apply)
             </Label>
-            <div className="space-y-2">
-              {INCOME_SOURCES.map((source) => {
-                const existing = fields.find(
-                  (f) => (f as any).sourceType === source.toLowerCase().replace(" ", "")
+            <Controller
+              name="sources"
+              control={control}
+              render={({ field }) => {
+                // Get currently selected source types from the field array (only non-work sources)
+                const currentSources = (field.value || []).filter(
+                  (s: any) => s.sourceType !== "work"
                 );
+                const selectedSources = INCOME_SOURCES.filter((source) => {
+                  const sourceType = source.toLowerCase().replace(" ", "");
+                  return currentSources.some(
+                    (s: any) => s.sourceType === sourceType
+                  );
+                });
+
                 return (
-                  <div key={source} className="flex items-center space-x-2">
-                    <Controller
-                      name="sources"
-                      control={control}
-                      render={({ field }) => {
-                        const hasSource = field.value?.some(
-                          (s) => s.sourceType === source.toLowerCase().replace(" ", "")
-                        );
-                        return (
-                          <>
-                            <Checkbox
-                              id={`income-${source}`}
-                              checked={hasSource}
-                              onCheckedChange={(checked) => {
-                                const current = field.value || [];
-                                if (checked) {
-                                  append({
-                                    id: `income-${Date.now()}-${Math.random()}`,
-                                    personId: "",
-                                    sourceType: source.toLowerCase().replace(" ", "") as any,
-                                    amount: 0,
-                                    frequency: "Monthly",
-                                  });
-                                } else {
-                                  const index = current.findIndex(
-                                    (s) =>
-                                      s.sourceType ===
-                                      source.toLowerCase().replace(" ", "")
-                                  );
-                                  if (index !== -1) {
-                                    remove(index);
-                                  }
-                                }
-                              }}
-                            />
-                            <Label
-                              htmlFor={`income-${source}`}
-                              className="font-normal cursor-pointer"
-                            >
-                              {source}
-                            </Label>
-                          </>
-                        );
-                      }}
-                    />
-                  </div>
+                  <MultiSelect
+                    id="income-sources"
+                    options={INCOME_SOURCES}
+                    value={selectedSources}
+                    onChange={(selected) => {
+                      // Only consider non-work sources
+                      const current = (field.value || []).filter(
+                        (s: any) => s.sourceType !== "work"
+                      );
+                      const currentSourceTypes = current.map(
+                        (s: any) => s.sourceType
+                      );
+                      const selectedSourceTypes = selected.map((s) =>
+                        s.toLowerCase().replace(" ", "")
+                      );
+
+                      // Remove sources that are no longer selected (only non-work sources)
+                      const toRemove: number[] = [];
+                      fields.forEach((fieldItem, index) => {
+                        const fieldSourceType = (fieldItem as any).sourceType;
+                        // Only remove non-work sources that are not in the selected list
+                        if (
+                          fieldSourceType !== "work" &&
+                          !selectedSourceTypes.includes(fieldSourceType)
+                        ) {
+                          toRemove.push(index);
+                        }
+                      });
+                      // Remove in reverse order to maintain correct indices
+                      toRemove.reverse().forEach((index) => remove(index));
+
+                      // Add new sources
+                      selectedSourceTypes.forEach((sourceType) => {
+                        if (!currentSourceTypes.includes(sourceType)) {
+                          append({
+                            id: `income-${Date.now()}-${Math.random()}`,
+                            personId: "",
+                            sourceType: sourceType as any,
+                            amount: 0,
+                            frequency: "Monthly",
+                          });
+                        }
+                      });
+                    }}
+                    placeholder="Select income sources (select all that apply)"
+                  />
                 );
-              })}
-            </div>
+              }}
+            />
           </div>
 
           {fields

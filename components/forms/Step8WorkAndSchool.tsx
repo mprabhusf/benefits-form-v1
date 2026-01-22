@@ -69,7 +69,7 @@ export default function Step8WorkAndSchool({
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label className="font-semibold">
-              Is any adult in the home in school or job training? *
+              Adult in School or Job Training *
             </Label>
             <Controller
               name="hasAdultInSchoolOrTraining"
@@ -91,7 +91,7 @@ export default function Step8WorkAndSchool({
             <div className="mt-4 p-4 bg-gray-50 rounded-md">
               <div className="space-y-2">
                 <Label htmlFor="hoursPerWeek" className="font-semibold">
-                  How many hours a week? *
+                  Hours Per Week *
                 </Label>
                 <Controller
                   name="hoursPerWeek"
@@ -128,7 +128,7 @@ export default function Step8WorkAndSchool({
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label className="font-semibold">
-              Is anyone looking for work right now? *
+              Looking for Work *
             </Label>
             <Controller
               name="isAnyoneLookingForWork"

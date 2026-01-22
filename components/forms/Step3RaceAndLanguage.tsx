@@ -7,7 +7,7 @@ import { useFormStore } from "@/store/form-store";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -88,38 +88,19 @@ export default function Step3RaceAndLanguage({
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label className="font-semibold">
-              What is your race or races? * (Select all that apply)
+              Race * (Select all that apply)
             </Label>
             <Controller
               name="race"
               control={control}
               render={({ field }) => (
-                <div className="space-y-2">
-                  {RACES.map((raceOption) => (
-                    <div key={raceOption} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`race-${raceOption}`}
-                        checked={field.value?.includes(raceOption)}
-                        onCheckedChange={(checked) => {
-                          const current = field.value || [];
-                          if (checked) {
-                            field.onChange([...current, raceOption]);
-                          } else {
-                            field.onChange(
-                              current.filter((r) => r !== raceOption)
-                            );
-                          }
-                        }}
-                      />
-                      <Label
-                        htmlFor={`race-${raceOption}`}
-                        className="font-normal cursor-pointer"
-                      >
-                        {raceOption}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
+                <MultiSelect
+                  id="race"
+                  options={RACES}
+                  value={field.value || []}
+                  onChange={(value) => field.onChange(value)}
+                  placeholder="Select races (select all that apply)"
+                />
               )}
             />
             {errors.race && (
@@ -128,7 +109,7 @@ export default function Step3RaceAndLanguage({
           </div>
 
           <div className="space-y-2">
-            <Label className="font-semibold">Are you Hispanic or Latino? *</Label>
+            <Label className="font-semibold">Hispanic or Latino *</Label>
             <Controller
               name="isHispanicOrLatino"
               control={control}
@@ -154,7 +135,7 @@ export default function Step3RaceAndLanguage({
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="preferredLanguage" className="font-semibold">
-              What language do you prefer? *
+              Preferred Language *
             </Label>
             <Controller
               name="preferredLanguage"

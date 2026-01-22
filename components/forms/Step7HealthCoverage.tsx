@@ -72,7 +72,7 @@ export default function Step7HealthCoverage({
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label className="font-semibold">
-              Does anyone in your home already have health insurance? *
+              Health Insurance *
             </Label>
             <Controller
               name="hasHealthInsurance"
@@ -94,7 +94,7 @@ export default function Step7HealthCoverage({
             <div className="space-y-4 mt-4 p-4 bg-gray-50 rounded-md">
               <div className="space-y-2">
                 <Label htmlFor="insuranceType" className="font-semibold">
-                  If yes, what kind? *
+                  Insurance Type *
                 </Label>
                 <Controller
                   name="insuranceType"
@@ -155,7 +155,7 @@ export default function Step7HealthCoverage({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label className="font-semibold">Is anyone pregnant? *</Label>
+            <Label className="font-semibold">Pregnant *</Label>
             <Controller
               name="hasPregnantPerson"
               control={control}
@@ -174,7 +174,7 @@ export default function Step7HealthCoverage({
 
           <div className="space-y-2">
             <Label className="font-semibold">
-              Does anyone have a disability or special health need? *
+              Disability or Special Health Need *
             </Label>
             <Controller
               name="hasDisabilityOrSpecialNeed"

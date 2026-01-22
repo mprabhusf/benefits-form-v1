@@ -127,7 +127,7 @@ export default function Step10FinalCheck({ onBack }: Step10FinalCheckProps) {
 
           <div className="space-y-2">
             <Label htmlFor="signatureDate" className="font-semibold">
-              What date are you signing this form? *
+              Signature Date *
             </Label>
             <Input
               id="signatureDate"

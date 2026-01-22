@@ -82,13 +82,13 @@ export function MultiFileUpload({
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("space-y-3", className)}>
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          "border-2 border-dashed rounded-lg p-3 transition-colors relative cursor-pointer",
+          "border-2 border-dashed rounded-lg p-4 transition-colors relative cursor-pointer",
           isDragging
             ? "border-primary bg-primary/5"
             : "border-gray-300 hover:border-gray-400 bg-gray-50"
@@ -103,15 +103,14 @@ export function MultiFileUpload({
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
         />
         <div className="relative z-0 pointer-events-none flex items-center gap-2">
-          <Upload className="h-4 w-4 text-gray-400 flex-shrink-0" />
-          <div className="flex-1 text-left">
-            <p className="text-sm font-medium text-gray-700">
-              Drop files here or Upload files
-            </p>
-            <p className="text-xs text-gray-500">Accepted: .pdf, .jpeg & .png</p>
-          </div>
+          <Upload className="h-5 w-5 text-gray-400 flex-shrink-0" />
+          <p className="text-sm font-medium text-gray-700">
+            Drop files here or Upload files
+          </p>
         </div>
       </div>
+      
+      <p className="text-xs text-gray-500">Accepted file type: .pdf, .jpeg & .png</p>
 
       {files.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -123,7 +122,7 @@ export function MultiFileUpload({
             return (
               <div
                 key={index}
-                className="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-full"
+                className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full"
               >
                 <FileIcon className="h-4 w-4 text-blue-600 flex-shrink-0" />
                 <span className="text-sm text-gray-700 truncate max-w-[200px]">
